@@ -8,6 +8,7 @@ defmodule VirtualMachine.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
+      VirtualMachine
       # Starts a worker by calling: VirtualMachine.Worker.start_link(arg)
       # {VirtualMachine.Worker, arg},
     ]

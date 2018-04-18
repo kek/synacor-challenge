@@ -1,5 +1,7 @@
 defmodule VirtualMachine.Instruction do
-  alias VirtualMachine.Value
+  alias VirtualMachine.{Value, Exceptions}
+
+  @spec execute(instruction :: Tuple.t(), state :: Map.t()) :: Map.t()
 
   # set: 1 a b - set register <a> to the value of <b>
   def execute({:set, destination, source}, state) do
@@ -12,7 +14,17 @@ defmodule VirtualMachine.Instruction do
     %{state | stack: [Value.dereference(a, state) | state.stack]}
   end
 
-  # pop: 3 a - remove the top element from the stack and write it into <a>; empty stack = error
+  # pop: 3 a - remove the top element from the stack and write it into <a>
+  def execute({:pop, dest}, state = %{stack: [h | t]}) do
+    new_registers = Map.put(state.registers, dest, h)
+    %{state | stack: t, registers: new_registers}
+  end
+
+  # empty stack = error
+  def execute({:pop, _}, %{stack: []}) do
+    raise Exceptions.StackIsEmptyError, message: "Tried to pop empty stack"
+  end
+
   # eq: 4 a b c - set <a> to 1 if <b> is equal to <c>; set it to 0 otherwise
   # gt: 5 a b c - set <a> to 1 if <b> is greater than <c>; set it to 0 otherwise
   # jmp: 6 a - jump to <a>

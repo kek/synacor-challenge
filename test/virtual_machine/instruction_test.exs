@@ -1,5 +1,6 @@
 defmodule VirtualMachine.InstructionTest do
   use ExUnit.Case
+  import ExUnit.Assertions
 
   import VirtualMachine.Instruction
 
@@ -28,7 +29,20 @@ defmodule VirtualMachine.InstructionTest do
   end
 
   describe "{:pop, a}" do
-    test "remove the top element from the stack and write it into <a>; empty stack = error" do
+    test "remove the top element from the stack and write it into <a>" do
+      initial_state = %{registers: %{@offset => 1}, stack: [2, 1]}
+
+      expected_state = %{registers: %{@offset => 2}, stack: [1]}
+
+      assert execute({:pop, @offset}, initial_state) == expected_state
+    end
+
+    test "empty stack = error" do
+      initial_state = %{stack: []}
+
+      assert_raise(VirtualMachine.Exceptions.StackIsEmptyError, fn ->
+        execute({:pop, @offset}, initial_state)
+      end)
     end
   end
 

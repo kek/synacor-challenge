@@ -7,6 +7,8 @@ defmodule VirtualMachine do
   require Logger
   alias VirtualMachine.Bytecode
 
+  @register_offset 32768
+
   defstruct registers: %{},
             program: [],
             output: nil
@@ -16,9 +18,10 @@ defmodule VirtualMachine do
   def init([]), do: {:ok, %__MODULE__{}}
 
   def set_register(register, value),
-    do: GenServer.call(__MODULE__, {:set_register, register + 32768, value})
+    do: GenServer.call(__MODULE__, {:set_register, @register_offset + register, value})
 
-  def get_register(register), do: GenServer.call(__MODULE__, {:get_register, register + 32768})
+  def get_register(register),
+    do: GenServer.call(__MODULE__, {:get_register, @register_offset + register})
 
   def set_output(pid), do: GenServer.call(__MODULE__, {:set_output, pid})
 
@@ -102,10 +105,11 @@ defmodule VirtualMachine do
   def evaluate([], state), do: state
 
   # numbers 0..32767 mean a literal value
-  defp dereference(value, _state) when value >= 0 and value <= 32767, do: value
+  defp dereference(value, _state) when value >= 0 and value < @register_offset, do: value
 
   # numbers 32768..32775 instead mean registers 0..7
-  defp dereference(value, state) when value >= 32768 and value <= 32775 do
+  defp dereference(value, state)
+       when value >= @register_offset and value < @register_offset + 8 do
     Map.get(state.registers, value)
   end
 

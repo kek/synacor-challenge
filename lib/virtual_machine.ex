@@ -5,6 +5,8 @@ defmodule VirtualMachine do
 
   use GenServer
 
+  alias VirtualMachine.Bytecode
+
   defstruct registers: %{},
             program: [],
             output: nil
@@ -20,6 +22,7 @@ defmodule VirtualMachine do
 
   def set_output(pid), do: GenServer.call(__MODULE__, {:set_output, pid})
 
+  def load_bytecode(bytecode), do: load_program(Bytecode.parse(bytecode))
   def load_program(program), do: GenServer.call(__MODULE__, {:load_program, program})
 
   def run, do: GenServer.call(__MODULE__, {:run})
@@ -39,7 +42,8 @@ defmodule VirtualMachine do
     {:reply, value, state}
   end
 
-  def handle_call({:load_program, program}, _, state) do
+  def handle_call({:load_program, bytecode}, _, state) do
+    program = Bytecode.parse(bytecode)
     new_state = %{state | program: program}
     {:reply, :ok, new_state}
   end
@@ -50,13 +54,13 @@ defmodule VirtualMachine do
     {:reply, :ok, new_state}
   end
 
-  def evaluate([19 | [value | rest]], state) do
+  def evaluate([{:out, value} | rest], state) do
     text = [dereference(value, state)] |> List.to_string()
     send(state.output, text)
     evaluate(rest, state)
   end
 
-  def evaluate([0 | _], state) do
+  def evaluate([{:halt} | _], state) do
     state
   end
 

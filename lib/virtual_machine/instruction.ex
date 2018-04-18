@@ -8,6 +8,10 @@ defmodule VirtualMachine.Instruction do
   end
 
   # push: 2 a - push <a> onto the stack
+  def execute({:push, a}, state) do
+    %{state | stack: [Value.dereference(a, state) | state.stack]}
+  end
+
   # pop: 3 a - remove the top element from the stack and write it into <a>; empty stack = error
   # eq: 4 a b c - set <a> to 1 if <b> is equal to <c>; set it to 0 otherwise
   # gt: 5 a b c - set <a> to 1 if <b> is greater than <c>; set it to 0 otherwise

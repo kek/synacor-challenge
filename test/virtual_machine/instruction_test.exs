@@ -19,6 +19,11 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:push, a}" do
     test "push <a> onto the stack" do
+      initial_state = %{registers: %{@offset => 2}, stack: [1]}
+
+      expected_state = %{registers: %{@offset => 2}, stack: [2, 1]}
+
+      assert execute({:push, @offset}, initial_state) == expected_state
     end
   end
 

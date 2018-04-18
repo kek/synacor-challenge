@@ -42,9 +42,9 @@ defmodule VirtualMachine.Bytecode do
   # out: 19 a - write the character represented by ascii code <a> to the terminal
   def parse([19 | [a | rest]]), do: [{:out, a} | parse(rest)]
   # in: 20 a - read a character from the terminal and write its ascii code to <a>;
-  # it can be assumed that once input starts, it will continue until a newline is
-  # encountered; this means that you can safely read whole lines from the keyboard
-  # and trust that they will be fully read
+  #     it can be assumed that once input starts, it will continue until a newline is
+  #     encountered; this means that you can safely read whole lines from the keyboard
+  #     and trust that they will be fully read
   def parse([20 | [a | rest]]), do: [{:in, a} | parse(rest)]
   # noop: 21 - no operation
   def parse([21 | rest]), do: [{:noop} | parse(rest)]

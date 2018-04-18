@@ -4,32 +4,28 @@ defmodule VirtualMachineTest do
 
   import VirtualMachine
 
-  # test "running the example program outputs the character in register 0 incremented by 4" do
-  #   program = [9, 32768, 32769, 4, :out, 32768]
+  test "running the example program outputs the character in register 0 incremented by 4" do
+    program = [9, 32768, 32769, 4, 19, 32768]
+    load_bytecode(program)
+    set_output(self())
+    set_register(1, ?A)
+    run()
 
-  #   load_program(program)
-
-  #   set_output(self())
-
-  #   set_register(1, 'A')
-
-  #   run()
-
-  #   assert_receive "E"
-  # end
+    assert_receive ?E
+  end
 
   test "loading bytecode" do
     load_bytecode([19, ?A])
     set_output(self())
     run()
-    assert_receive "A"
+    assert_receive ?A
   end
 
   test "outputting 'A'" do
     load_program([{:out, ?A}])
     set_output(self())
     run()
-    assert_receive "A"
+    assert_receive ?A
   end
 
   test "outputting value of register 0" do
@@ -37,7 +33,7 @@ defmodule VirtualMachineTest do
     load_program([{:out, 32768}])
     set_output(self())
     run()
-    assert_receive "A"
+    assert_receive ?A
   end
 
   test "getting and setting registers" do
@@ -49,6 +45,6 @@ defmodule VirtualMachineTest do
     load_program([{:halt}, {:out, ?A}])
     set_output(self())
     run()
-    refute_receive "A"
+    refute_receive ?A
   end
 end

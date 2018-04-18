@@ -51,18 +51,4 @@ defmodule VirtualMachineTest do
       refute_receive ?A
     end
   end
-
-  describe "{:set, a, b}" do
-    test "set register <a> to the value of <b>" do
-      load_program([
-        {:set, @register_offset, 99},
-        {:set, @register_offset + 1, @register_offset},
-        {:out, @register_offset + 1}
-      ])
-
-      set_output(self())
-      run()
-      assert_receive 99
-    end
-  end
 end

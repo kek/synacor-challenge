@@ -1,6 +1,22 @@
 defmodule VirtualMachine.InstructionTest do
   use ExUnit.Case
 
+  import VirtualMachine.Instruction
+
+  @offset 32768
+
+  describe "{:set, a, b}" do
+    test "set register <a> to the value of <b>" do
+      initial_state = %{registers: %{@offset => 1}}
+
+      expected_state = %{
+        registers: %{@offset => 1, (@offset + 1) => 1}
+      }
+
+      assert execute({:set, @offset + 1, @offset}, initial_state) == expected_state
+    end
+  end
+
   describe "{:push, a}" do
     test "push <a> onto the stack" do
     end

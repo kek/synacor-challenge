@@ -16,6 +16,8 @@ defmodule VirtualMachine do
   def set_register(register, value),
     do: GenServer.call(__MODULE__, {:set_register, register, value})
 
+  def get_register(register), do: GenServer.call(__MODULE__, {:get_register, register})
+
   def set_output(pid), do: GenServer.call(__MODULE__, {:set_output, pid})
 
   def load_program(program), do: GenServer.call(__MODULE__, {:load_program, program})
@@ -32,6 +34,11 @@ defmodule VirtualMachine do
     {:reply, :ok, new_state}
   end
 
+  def handle_call({:get_register, register}, _, state) do
+    value = Map.get(state.registers, register)
+    {:reply, value, state}
+  end
+
   def handle_call({:load_program, program}, _, state) do
     new_state = %{state | program: program}
     {:reply, :ok, new_state}
@@ -43,11 +50,28 @@ defmodule VirtualMachine do
     {:reply, :ok, new_state}
   end
 
-  def evaluate([19 | [character | rest]], state) do
-    text = [character] |> List.to_string()
+  def evaluate([19 | [value | rest]], state) do
+    text = [dereference(value, state)] |> List.to_string()
     send(state.output, text)
     evaluate(rest, state)
   end
 
+  def evaluate([0 | _], state) do
+    state
+  end
+
   def evaluate([], state), do: state
+
+  # numbers 0..32767 mean a literal value
+  defp dereference(value, _state) when value >= 0 and value <= 32767, do: value
+
+  # numbers 32768..32775 instead mean registers 0..7
+  defp dereference(value, state) when value >= 32768 and value <= 32775 do
+    Map.get(state.registers, value - 32768)
+  end
+
+  defp dereference(value, state) do
+    raise VirtualMachine.Exceptions.InvalidRegisterError,
+      message: "Invalid value #{value}. State: #{inspect(state)}"
+  end
 end

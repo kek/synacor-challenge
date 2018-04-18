@@ -22,4 +22,38 @@ defmodule VirtualMachineTest do
     VirtualMachine.run()
     assert_receive "A"
   end
+
+  test "outputting value of register 0" do
+    VirtualMachine.set_register(0, ?A)
+    VirtualMachine.load_program([19, 32768])
+    VirtualMachine.set_output(self())
+    VirtualMachine.run()
+    assert_receive "A"
+  end
+
+  test "getting and setting registers" do
+    VirtualMachine.set_register(0, 1)
+    VirtualMachine.set_register(1, 1)
+    VirtualMachine.set_register(2, 1)
+    VirtualMachine.set_register(3, 1)
+    VirtualMachine.set_register(4, 1)
+    VirtualMachine.set_register(5, 1)
+    VirtualMachine.set_register(6, 1)
+    VirtualMachine.set_register(7, 1)
+    assert VirtualMachine.get_register(0) == 1
+    assert VirtualMachine.get_register(1) == 1
+    assert VirtualMachine.get_register(2) == 1
+    assert VirtualMachine.get_register(3) == 1
+    assert VirtualMachine.get_register(4) == 1
+    assert VirtualMachine.get_register(5) == 1
+    assert VirtualMachine.get_register(6) == 1
+    assert VirtualMachine.get_register(7) == 1
+  end
+
+  test "stopping the program" do
+    VirtualMachine.load_program([0, 19, ?A])
+    VirtualMachine.set_output(self())
+    VirtualMachine.run()
+    refute_receive "A"
+  end
 end

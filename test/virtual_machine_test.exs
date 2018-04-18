@@ -2,65 +2,53 @@ defmodule VirtualMachineTest do
   use ExUnit.Case
   doctest VirtualMachine
 
+  import VirtualMachine
+
   # test "running the example program outputs the character in register 0 incremented by 4" do
   #   program = [9, 32768, 32769, 4, :out, 32768]
 
-  #   VirtualMachine.load_program(program)
+  #   load_program(program)
 
-  #   VirtualMachine.set_output(self())
+  #   set_output(self())
 
-  #   VirtualMachine.set_register(1, 'A')
+  #   set_register(1, 'A')
 
-  #   VirtualMachine.run()
+  #   run()
 
   #   assert_receive "E"
   # end
 
   test "loading bytecode" do
-    VirtualMachine.load_bytecode([19, ?A])
-    VirtualMachine.set_output(self())
-    VirtualMachine.run()
+    load_bytecode([19, ?A])
+    set_output(self())
+    run()
     assert_receive "A"
   end
 
   test "outputting 'A'" do
-    VirtualMachine.load_program([{:out, ?A}])
-    VirtualMachine.set_output(self())
-    VirtualMachine.run()
+    load_program([{:out, ?A}])
+    set_output(self())
+    run()
     assert_receive "A"
   end
 
   test "outputting value of register 0" do
-    VirtualMachine.set_register(0, ?A)
-    VirtualMachine.load_program([{:out, 32768}])
-    VirtualMachine.set_output(self())
-    VirtualMachine.run()
+    set_register(0, ?A)
+    load_program([{:out, 32768}])
+    set_output(self())
+    run()
     assert_receive "A"
   end
 
   test "getting and setting registers" do
-    VirtualMachine.set_register(0, 1)
-    VirtualMachine.set_register(1, 1)
-    VirtualMachine.set_register(2, 1)
-    VirtualMachine.set_register(3, 1)
-    VirtualMachine.set_register(4, 1)
-    VirtualMachine.set_register(5, 1)
-    VirtualMachine.set_register(6, 1)
-    VirtualMachine.set_register(7, 1)
-    assert VirtualMachine.get_register(0) == 1
-    assert VirtualMachine.get_register(1) == 1
-    assert VirtualMachine.get_register(2) == 1
-    assert VirtualMachine.get_register(3) == 1
-    assert VirtualMachine.get_register(4) == 1
-    assert VirtualMachine.get_register(5) == 1
-    assert VirtualMachine.get_register(6) == 1
-    assert VirtualMachine.get_register(7) == 1
+    Enum.each(0..7, &set_register(&1, 1))
+    Enum.each(0..7, &assert(get_register(&1) == 1))
   end
 
   test "stopping the program" do
-    VirtualMachine.load_program([{:halt}, {:out, ?A}])
-    VirtualMachine.set_output(self())
-    VirtualMachine.run()
+    load_program([{:halt}, {:out, ?A}])
+    set_output(self())
+    run()
     refute_receive "A"
   end
 end

@@ -4,6 +4,8 @@ defmodule VirtualMachineTest do
 
   import VirtualMachine
 
+  @register_offset 32768
+
   test "running the example program outputs the character in register 0 incremented by 4" do
     program = [9, 32768, 32769, 4, 19, 32768]
     load_bytecode(program)
@@ -41,35 +43,41 @@ defmodule VirtualMachineTest do
     Enum.each(0..7, &assert(get_register(&1) == 1))
   end
 
-  test "stopping the program" do
-    load_program([{:halt}, {:out, ?A}])
-    set_output(self())
-    run()
-    refute_receive ?A
-  end
-
-  @moduletag :pending
   describe "{:halt}" do
     test "stop execution and terminate the program" do
+      load_program([{:halt}, {:out, ?A}])
+      set_output(self())
+      run()
+      refute_receive ?A
     end
   end
 
   describe "{:set, a, b}" do
     test "set register <a> to the value of <b>" do
+      load_program([
+        {:set, @register_offset, 99},
+        {:set, @register_offset + 1, @register_offset},
+        {:out, @register_offset + 1}
+      ])
+
+      set_output(self())
+      run()
+      assert_receive 99
     end
   end
 
+  @moduletag :pending
   describe "{:push, a}" do
     test "push <a> onto the stack" do
     end
   end
 
-  describe "{:pop}" do
+  describe "{:pop, a}" do
     test "remove the top element from the stack and write it into <a>; empty stack = error" do
     end
   end
 
-  describe "{:eq}" do
+  describe "{:eq, a, b, c}" do
     test "set <a> to 1 if <b> is equal to <c>; set it to 0 otherwise" do
     end
   end

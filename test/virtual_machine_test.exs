@@ -4,8 +4,6 @@ defmodule VirtualMachineTest do
 
   import VirtualMachine
 
-  @register_offset 32768
-
   test "running the example program outputs the character in register 0 incremented by 4" do
     program = [9, 32768, 32769, 4, 19, 32768]
     load_bytecode(program)

@@ -4,7 +4,6 @@ defmodule VirtualMachine do
   """
 
   use GenServer
-  require Logger
   alias VirtualMachine.{Bytecode, Program}
 
   @register_offset 32768
@@ -48,7 +47,6 @@ defmodule VirtualMachine do
 
   def handle_call({:load_program, bytecode}, _, state) do
     program = Bytecode.parse(bytecode)
-    Logger.debug("Loaded program: #{inspect(program)}")
     new_state = %{state | program: program}
     {:reply, :ok, new_state}
   end

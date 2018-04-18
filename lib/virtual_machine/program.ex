@@ -1,5 +1,4 @@
 defmodule VirtualMachine.Program do
-  require Logger
   alias VirtualMachine.Instruction
 
   def evaluate([], state), do: state

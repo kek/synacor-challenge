@@ -1,6 +1,5 @@
 defmodule VirtualMachine.Instruction do
   alias VirtualMachine.Value
-  require Logger
 
   # set: 1 a b - set register <a> to the value of <b>
   def execute({:set, destination, source}, state) do
@@ -17,8 +16,6 @@ defmodule VirtualMachine.Instruction do
   # jf: 8 a b - if <a> is zero, jump to <b>
   # add: 9 a b c - assign into <a> the sum of <b> and <c> (modulo 32768)
   def execute({:add, dest, left, right}, state) do
-    Logger.debug("left: #{Value.dereference(left, state)}")
-    Logger.debug("right: #{Value.dereference(right, state)}")
     sum = Value.dereference(left, state) + Value.dereference(right, state)
     %{state | registers: Map.put(state.registers, dest, sum)}
   end

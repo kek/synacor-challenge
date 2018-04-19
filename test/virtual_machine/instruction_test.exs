@@ -90,7 +90,7 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:jmp, a}" do
     test "jump to <a>" do
-      initial_state = %State{registers: %{@offset => 10}, pc: 5}
+      initial_state = %State{registers: %{@offset => 10}, pc: 0}
       expected_state = %State{registers: %{@offset => 10}, pc: 8}
 
       assert execute({:jmp, @offset}, initial_state) == expected_state
@@ -99,17 +99,33 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:jt, a, b}" do
     test "if <a> is nonzero, jump to <b>" do
+      initial_state = %State{registers: %{@offset => 1}, pc: 0}
+      expected_state = %State{registers: %{@offset => 1}, pc: 7}
+
+      assert execute({:jt, @offset, 10}, initial_state) == expected_state
     end
 
     test "otherwise noop" do
+      initial_state = %State{registers: %{@offset => 0}, pc: 0}
+      expected_state = %State{registers: %{@offset => 0}, pc: 0}
+
+      assert execute({:jt, @offset, 10}, initial_state) == expected_state
     end
   end
 
   describe "{:jf, a, b}" do
     test "if <a> is zero, jump to <b>" do
+      initial_state = %State{registers: %{@offset => 0}, pc: 0}
+      expected_state = %State{registers: %{@offset => 0}, pc: 7}
+
+      assert execute({:jf, @offset, 10}, initial_state) == expected_state
     end
 
     test "otherwise noop" do
+      initial_state = %State{registers: %{@offset => 1}, pc: 0}
+      expected_state = %State{registers: %{@offset => 1}, pc: 0}
+
+      assert execute({:jf, @offset, 10}, initial_state) == expected_state
     end
   end
 

@@ -55,7 +55,23 @@ defmodule VirtualMachine.Instruction do
   end
 
   # jt: 7 a b - if <a> is nonzero, jump to <b>
+  def execute({:jt, a, dest}, state) do
+    if(Value.dereference(a, state) != 0) do
+      %{state | pc: Value.dereference(dest, state) - 3}
+    else
+      state
+    end
+  end
+
   # jf: 8 a b - if <a> is zero, jump to <b>
+  def execute({:jf, a, dest}, state) do
+    if(Value.dereference(a, state) == 0) do
+      %{state | pc: Value.dereference(dest, state) - 3}
+    else
+      state
+    end
+  end
+
   # add: 9 a b c - assign into <a> the sum of <b> and <c> (modulo 32768)
   def execute({:add, dest, left, right}, state) do
     sum = Value.dereference(left, state) + Value.dereference(right, state)

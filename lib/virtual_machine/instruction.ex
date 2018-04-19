@@ -51,7 +51,7 @@ defmodule VirtualMachine.Instruction do
 
   # jmp: 6 a - jump to <a>
   def execute({:jmp, dest}, state) do
-    %{state | pc: Value.dereference(dest, state) - 1}
+    %{state | pc: Value.dereference(dest, state) - 2}
   end
 
   # jt: 7 a b - if <a> is nonzero, jump to <b>

@@ -1,7 +1,7 @@
 defmodule VirtualMachine.State do
   defstruct registers: %{},
             memory: [],
-            output: nil,
+            output: VirtualMachine.Terminal,
             stack: [],
             pc: 0
 end

@@ -50,6 +50,10 @@ defmodule VirtualMachine.Instruction do
   end
 
   # jmp: 6 a - jump to <a>
+  def execute({:jmp, dest}, state) do
+    %{state | pc: Value.dereference(dest, state) - 1}
+  end
+
   # jt: 7 a b - if <a> is nonzero, jump to <b>
   # jf: 8 a b - if <a> is zero, jump to <b>
   # add: 9 a b c - assign into <a> the sum of <b> and <c> (modulo 32768)

@@ -90,6 +90,10 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:jmp, a}" do
     test "jump to <a>" do
+      initial_state = %State{registers: %{@offset => 10}, pc: 5}
+      expected_state = %State{registers: %{@offset => 10}, pc: 9}
+
+      assert execute({:jmp, @offset}, initial_state) == expected_state
     end
   end
 

@@ -28,6 +28,7 @@ defmodule VirtualMachine.BytecodeTest do
       assert parse([19, ?A]) == {:out, ?A}
       assert parse([20, ?A]) == {:in, ?A}
       assert parse([21]) == {:noop}
+      assert parse([21 | [1, 2, 3]]) == {:noop}
     end
   end
 
@@ -35,6 +36,12 @@ defmodule VirtualMachine.BytecodeTest do
     test "reads bytes from the file" do
       bytes = read("priv/challenge.bin")
       assert [0x15, 0x15, 0x13, 0x57, 0x13, 0x65, 0x13, 0x6C] ++ _ = bytes
+
+      bytes =
+        read("priv/challenge.bin")
+        |> Enum.drop(504)
+
+      assert [0x8001, 0x445, 0x7, 0x8002] ++ _ = bytes
     end
   end
 end

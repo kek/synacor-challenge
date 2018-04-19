@@ -1,6 +1,5 @@
 defmodule VirtualMachine.Program do
   alias VirtualMachine.{Instruction, Bytecode}
-  # require Logger
 
   def evaluate(program, state) do
     code = Enum.drop(program, state.pc)
@@ -15,7 +14,6 @@ defmodule VirtualMachine.Program do
 
       code ->
         instruction = Bytecode.parse(code)
-        # Logger.debug("Executing #{inspect(instruction)} with #{inspect(state)}")
         state = Instruction.execute(instruction, state)
         state = %{state | pc: state.pc + tuple_size(instruction)}
         evaluate(program, state)

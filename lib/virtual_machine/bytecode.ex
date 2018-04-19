@@ -2,18 +2,17 @@ defmodule VirtualMachine.Bytecode do
   def read(file) do
     file
     |> File.read!()
-    |> to_bytes
+    |> to_codes
   end
 
-  def to_bytes(<<a, b>> <> rest) do
-    [b * 16 + a] ++ to_bytes(rest)
+  defp to_codes(<<a, b>> <> rest) do
+    code = a + b * 256
+    [code] ++ to_codes(rest)
   end
 
-  def to_bytes(<<>>) do
+  defp to_codes(<<>>) do
     []
   end
-
-  def parse([]), do: []
 
   # halt: 0 - stop execution and terminate the program
   def parse([0 | _]), do: {:halt}

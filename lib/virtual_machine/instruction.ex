@@ -28,7 +28,27 @@ defmodule VirtualMachine.Instruction do
   end
 
   # eq: 4 a b c - set <a> to 1 if <b> is equal to <c>; set it to 0 otherwise
+  def execute({:eq, dest, left, right}, state) do
+    values = {Value.dereference(left, state), Value.dereference(right, state)}
+
+    result =
+      case values do
+        {x, x} -> 1
+        {_, _} -> 0
+      end
+
+    new_registers = Map.put(state.registers, dest, result)
+    %{state | registers: new_registers}
+  end
+
   # gt: 5 a b c - set <a> to 1 if <b> is greater than <c>; set it to 0 otherwise
+  def execute({:gt, dest, left, right}, state) do
+    result = if Value.dereference(left, state) > Value.dereference(right, state), do: 1, else: 0
+
+    new_registers = Map.put(state.registers, dest, result)
+    %{state | registers: new_registers}
+  end
+
   # jmp: 6 a - jump to <a>
   # jt: 7 a b - if <a> is nonzero, jump to <b>
   # jf: 8 a b - if <a> is zero, jump to <b>

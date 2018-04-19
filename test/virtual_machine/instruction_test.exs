@@ -45,12 +45,46 @@ defmodule VirtualMachine.InstructionTest do
   end
 
   describe "{:eq, a, b, c}" do
-    test "set <a> to 1 if <b> is equal to <c>; set it to 0 otherwise" do
+    test "set <a> to 1 if <b> is equal to <c>" do
+      initial_state = %State{registers: %{(@offset + 1) => ?A, (@offset + 2) => ?A}}
+
+      expected_state = %State{
+        registers: %{@offset => 1, (@offset + 1) => ?A, (@offset + 2) => ?A}
+      }
+
+      assert execute({:eq, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+    end
+
+    test "set it to 0 otherwise" do
+      initial_state = %State{registers: %{(@offset + 1) => ?A, (@offset + 2) => ?B}}
+
+      expected_state = %State{
+        registers: %{@offset => 0, (@offset + 1) => ?A, (@offset + 2) => ?B}
+      }
+
+      assert execute({:eq, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
     end
   end
 
   describe "{:gt}" do
-    test "set <a> to 1 if <b> is greater than <c>; set it to 0 otherwise" do
+    test "set <a> to 1 if <b> is greater than <c>" do
+      initial_state = %State{registers: %{(@offset + 1) => ?B, (@offset + 2) => ?A}}
+
+      expected_state = %State{
+        registers: %{@offset => 1, (@offset + 1) => ?B, (@offset + 2) => ?A}
+      }
+
+      assert execute({:gt, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+    end
+
+    test "set it to 0 otherwise" do
+      initial_state = %State{registers: %{(@offset + 1) => ?A, (@offset + 2) => ?A}}
+
+      expected_state = %State{
+        registers: %{@offset => 0, (@offset + 1) => ?A, (@offset + 2) => ?A}
+      }
+
+      assert execute({:gt, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
     end
   end
 
@@ -62,10 +96,16 @@ defmodule VirtualMachine.InstructionTest do
   describe "{:jt, a, b}" do
     test "if <a> is nonzero, jump to <b>" do
     end
+
+    test "otherwise noop" do
+    end
   end
 
   describe "{:jf, a, b}" do
     test "if <a> is zero, jump to <b>" do
+    end
+
+    test "otherwise noop" do
     end
   end
 

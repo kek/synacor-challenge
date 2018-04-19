@@ -131,8 +131,13 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:add, a, b, c}" do
     test "assign into <a> the sum of <b> and <c> (modulo 32768)" do
-      initial_state = %State{registers: %{(@offset + 1) => 1, (@offset + 2) => 1}}
-      expected_state = %State{registers: %{@offset => 2, (@offset + 1) => 1, (@offset + 2) => 1}}
+      # all math is modulo 32768; 32758 + 15 => 5
+      initial_state = %State{registers: %{(@offset + 1) => 32758, (@offset + 2) => 15}}
+
+      expected_state = %State{
+        registers: %{@offset => 5, (@offset + 1) => 32758, (@offset + 2) => 15}
+      }
+
       assert execute({:add, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
     end
   end

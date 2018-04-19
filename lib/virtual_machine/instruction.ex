@@ -74,7 +74,7 @@ defmodule VirtualMachine.Instruction do
 
   # add: 9 a b c - assign into <a> the sum of <b> and <c> (modulo 32768)
   def execute({:add, dest, left, right}, state) do
-    sum = Value.dereference(left, state) + Value.dereference(right, state)
+    sum = modulo32768(Value.dereference(left, state) + Value.dereference(right, state))
     %{state | registers: Map.put(state.registers, dest, sum)}
   end
 
@@ -99,4 +99,7 @@ defmodule VirtualMachine.Instruction do
   #     and trust that they will be fully read
   # noop: 21 - no operation
   def execute({:noop}, state), do: state
+
+  defp modulo32768(number) when number < 32768, do: number
+  defp modulo32768(number), do: modulo32768(number - 32768)
 end

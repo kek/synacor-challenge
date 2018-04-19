@@ -33,4 +33,11 @@ defmodule VirtualMachine.BytecodeTest do
       assert parse([21]) == [{:noop}]
     end
   end
+
+  describe "read" do
+    test "reads bytes from the file" do
+      bytes = read("priv/challenge.bin")
+      assert [0x15, 0x15, 0x13, 0x57, 0x13, 0x65, 0x13, 0x6C] ++ _ = bytes
+    end
+  end
 end

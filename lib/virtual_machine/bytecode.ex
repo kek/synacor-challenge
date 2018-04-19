@@ -1,4 +1,18 @@
 defmodule VirtualMachine.Bytecode do
+  def read(file) do
+    file
+    |> File.read!()
+    |> to_bytes
+  end
+
+  def to_bytes(<<a, b>> <> rest) do
+    [b * 16 + a] ++ to_bytes(rest)
+  end
+
+  def to_bytes(<<>>) do
+    []
+  end
+
   def parse([]), do: []
 
   # halt: 0 - stop execution and terminate the program

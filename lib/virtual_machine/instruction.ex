@@ -78,4 +78,5 @@ defmodule VirtualMachine.Instruction do
   #     encountered; this means that you can safely read whole lines from the keyboard
   #     and trust that they will be fully read
   # noop: 21 - no operation
+  def execute({:noop}, state), do: state
 end

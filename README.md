@@ -25,7 +25,7 @@ your progress. Good luck!
 
 ## execution
 
-- After an operation is executed, the next instruction to read is immediately after the last        argument of the current operation. If a jump was performed, the next operation is instead the     exact destination of the jump.
+- After an operation is executed, the next instruction to read is immediately after the last           argument of the current operation. If a jump was performed, the next operation is instead the        exact destination of the jump.
 - Encountering a register as an operation argument should be taken as reading from the register 
   or setting into the register as appropriate.
 

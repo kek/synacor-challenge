@@ -4,7 +4,7 @@ defmodule VirtualMachine do
   """
 
   use GenServer
-  alias VirtualMachine.{Bytecode, Program, State}
+  alias VirtualMachine.{Bytecode, Program, State, Terminal}
 
   @register_offset 32768
 
@@ -25,6 +25,16 @@ defmodule VirtualMachine do
   def load_program(program), do: GenServer.call(__MODULE__, {:load_program, program})
 
   def run, do: GenServer.call(__MODULE__, {:run})
+
+  def challenge do
+    set_output(Terminal)
+
+    "priv/challenge.bin"
+    |> Bytecode.read()
+    |> load_bytecode()
+
+    run()
+  end
 
   def handle_call({:set_output, pid}, _, state) do
     new_state = %{state | output: pid}

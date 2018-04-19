@@ -4,11 +4,13 @@ defmodule VirtualMachine.Application do
   @moduledoc false
 
   use Application
+  alias VirtualMachine.Terminal
 
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      VirtualMachine
+      VirtualMachine,
+      Terminal
       # Starts a worker by calling: VirtualMachine.Worker.start_link(arg)
       # {VirtualMachine.Worker, arg},
     ]

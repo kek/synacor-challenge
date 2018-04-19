@@ -154,16 +154,37 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:and, a, b, c}" do
     test "stores into <a> the bitwise and of <b> and <c>" do
+      initial_state = %State{registers: %{(@offset + 1) => 1, (@offset + 2) => 1}}
+
+      expected_state = %State{
+        registers: %{@offset => 1, (@offset + 1) => 1, (@offset + 2) => 1}
+      }
+
+      assert execute({:and, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
     end
   end
 
   describe "{:or, a, b, c}" do
     test "stores into <a> the bitwise or of <b> and <c>" do
+      initial_state = %State{registers: %{(@offset + 1) => 1, (@offset + 2) => 1}}
+
+      expected_state = %State{
+        registers: %{@offset => 1, (@offset + 1) => 1, (@offset + 2) => 1}
+      }
+
+      assert execute({:and, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
     end
   end
 
   describe "{:not. a, b}" do
     test "stores 15-bit bitwise inverse of <b> in <a>" do
+      initial_state = %State{registers: %{(@offset + 1) => 0}}
+
+      expected_state = %State{
+        registers: %{@offset => 32767, (@offset + 1) => 0}
+      }
+
+      assert execute({:not, @offset, @offset + 1}, initial_state) == expected_state
     end
   end
 

@@ -1,5 +1,6 @@
 defmodule VirtualMachine.Instruction do
   alias VirtualMachine.{Value, Exceptions}
+  require Bitwise
 
   @type instruction :: Tuple.t()
   @type state :: VirtualMachine.State.t()
@@ -75,14 +76,35 @@ defmodule VirtualMachine.Instruction do
   # add: 9 a b c - assign into <a> the sum of <b> and <c> (modulo 32768)
   def execute({:add, dest, left, right}, state) do
     sum = modulo32768(Value.dereference(left, state) + Value.dereference(right, state))
+    # TODO: dereference dest?
     %{state | registers: Map.put(state.registers, dest, sum)}
   end
 
   # mult: 10 a b c - store into <a> the product of <b> and <c> (modulo 32768)
   # mod: 11 a b c - store into <a> the remainder of <b> divided by <c>
   # and: 12 a b c - stores into <a> the bitwise and of <b> and <c>
+  def execute({:and, a, b, c}, state) do
+    b = Value.dereference(b, state)
+    c = Value.dereference(c, state)
+
+    %{state | registers: Map.put(state.registers, a, Bitwise.band(b, c))}
+  end
+
   # or: 13 a b c - stores into <a> the bitwise or of <b> and <c>
+  def execute({:or, a, b, c}, state) do
+    b = Value.dereference(b, state)
+    c = Value.dereference(c, state)
+
+    %{state | registers: Map.put(state.registers, a, Bitwise.bor(b, c))}
+  end
+
   # not: 14 a b - stores 15-bit bitwise inverse of <b> in <a>
+  def execute({:not, a, b}, state) do
+    b = Value.dereference(b, state)
+
+    %{state | registers: Map.put(state.registers, a, modulo32768(Bitwise.bnot(b)))}
+  end
+
   # rmem: 15 a b - read memory at address <b> and write it to <a>
   # wmem: 16 a b - write the value from <b> into memory at address <a>
   # call: 17 a - write the address of the next instruction to the stack and jump to <a>
@@ -100,6 +122,7 @@ defmodule VirtualMachine.Instruction do
   # noop: 21 - no operation
   def execute({:noop}, state), do: state
 
+  defp modulo32768(number) when number < 0, do: number + 32768
   defp modulo32768(number) when number < 32768, do: number
   defp modulo32768(number), do: modulo32768(number - 32768)
 end

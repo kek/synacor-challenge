@@ -1,16 +1,16 @@
 defmodule VirtualMachine.InstructionTest do
   use ExUnit.Case
   import ExUnit.Assertions
-
   import VirtualMachine.Instruction
+  alias VirtualMachine.State
 
   @offset 32768
 
   describe "{:set, a, b}" do
     test "set register <a> to the value of <b>" do
-      initial_state = %{registers: %{@offset => 1}}
+      initial_state = %State{registers: %{@offset => 1}}
 
-      expected_state = %{
+      expected_state = %State{
         registers: %{@offset => 1, (@offset + 1) => 1}
       }
 
@@ -20,9 +20,8 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:push, a}" do
     test "push <a> onto the stack" do
-      initial_state = %{registers: %{@offset => 2}, stack: [1]}
-
-      expected_state = %{registers: %{@offset => 2}, stack: [2, 1]}
+      initial_state = %State{registers: %{@offset => 2}, stack: [1]}
+      expected_state = %State{registers: %{@offset => 2}, stack: [2, 1]}
 
       assert execute({:push, @offset}, initial_state) == expected_state
     end
@@ -30,15 +29,14 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:pop, a}" do
     test "remove the top element from the stack and write it into <a>" do
-      initial_state = %{registers: %{@offset => 1}, stack: [2, 1]}
-
-      expected_state = %{registers: %{@offset => 2}, stack: [1]}
+      initial_state = %State{registers: %{@offset => 1}, stack: [2, 1]}
+      expected_state = %State{registers: %{@offset => 2}, stack: [1]}
 
       assert execute({:pop, @offset}, initial_state) == expected_state
     end
 
     test "empty stack = error" do
-      initial_state = %{stack: []}
+      initial_state = %State{stack: []}
 
       assert_raise(VirtualMachine.Exceptions.StackIsEmptyError, fn ->
         execute({:pop, @offset}, initial_state)

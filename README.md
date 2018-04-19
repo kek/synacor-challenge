@@ -1,9 +1,9 @@
 # Synacor Challenge
 
 In this challenge, your job is to use this architecture spec to create a
-virtual machine capable of running the included binary.  Along the way,
+virtual machine capable of running the included binary. Along the way,
 you will find codes; submit these to the challenge website to track
-your progress.  Good luck!
+your progress. Good luck!
 
 ## architecture
 
@@ -25,8 +25,9 @@ your progress.  Good luck!
 
 ## execution
 
-- After an operation is executed, the next instruction to read is immediately after the last argument of the current operation.  If a jump was performed, the next operation is instead the exact destination of the jump.
-- Encountering a register as an operation argument should be taken as reading from the register or setting into the register as appropriate.
+- After an operation is executed, the next instruction to read is immediately after the last        argument of the current operation. If a jump was performed, the next operation is instead the     exact destination of the jump.
+- Encountering a register as an operation argument should be taken as reading from the register 
+  or setting into the register as appropriate.
 
 ## hints
 

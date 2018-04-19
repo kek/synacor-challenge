@@ -1,7 +1,9 @@
 defmodule VirtualMachine.Instruction do
   alias VirtualMachine.{Value, Exceptions}
 
-  @spec execute(instruction :: Tuple.t(), state :: Map.t()) :: Map.t()
+  @type instruction :: Tuple.t()
+  @type state :: VirtualMachine.State.t()
+  @spec execute(instruction :: instruction(), state :: state()) :: state()
 
   # set: 1 a b - set register <a> to the value of <b>
   def execute({:set, destination, source}, state) do

@@ -4,18 +4,13 @@ defmodule VirtualMachine do
   """
 
   use GenServer
-  alias VirtualMachine.{Bytecode, Program}
+  alias VirtualMachine.{Bytecode, Program, State}
 
   @register_offset 32768
 
-  defstruct registers: %{},
-            program: [],
-            output: nil,
-            stack: []
-
   def start_link(_), do: GenServer.start_link(__MODULE__, [], name: __MODULE__)
 
-  def init([]), do: {:ok, %__MODULE__{}}
+  def init([]), do: {:ok, %State{}}
 
   def set_register(register, value),
     do: GenServer.call(__MODULE__, {:set_register, @register_offset + register, value})

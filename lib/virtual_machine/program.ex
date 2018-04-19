@@ -1,20 +1,21 @@
 defmodule VirtualMachine.Program do
-  alias VirtualMachine.Instruction
+  alias VirtualMachine.{Instruction, Bytecode}
 
   def evaluate(program, state) do
-    instruction = Enum.at(program, state.pc)
+    code = Enum.drop(program, state.pc)
 
-    case instruction do
-      nil ->
+    case code do
+      [] ->
         state
 
       # halt: 0 - stop execution and terminate the program
       {:halt} ->
         state
 
-      instruction ->
+      code ->
+        instruction = Bytecode.parse(code)
         state = Instruction.execute(instruction, state)
-        state = %{state | pc: state.pc + 1}
+        state = %{state | pc: state.pc}
         evaluate(program, state)
     end
   end

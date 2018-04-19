@@ -1,6 +1,6 @@
 defmodule VirtualMachine.State do
   defstruct registers: %{},
-            program: [],
+            memory: [],
             output: nil,
             stack: [],
             pc: 0

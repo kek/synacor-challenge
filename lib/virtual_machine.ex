@@ -20,8 +20,6 @@ defmodule VirtualMachine do
 
   def set_output(pid), do: GenServer.call(__MODULE__, {:set_output, pid})
 
-  def load_bytecode(bytecode), do: load_program(Bytecode.parse(bytecode))
-
   def load_program(program), do: GenServer.call(__MODULE__, {:load_program, program})
 
   def run, do: GenServer.call(__MODULE__, {:run})
@@ -33,7 +31,7 @@ defmodule VirtualMachine do
 
     "priv/challenge.bin"
     |> Bytecode.read()
-    |> load_bytecode()
+    |> load_program()
 
     run()
   end
@@ -54,13 +52,12 @@ defmodule VirtualMachine do
   end
 
   def handle_call({:load_program, bytecode}, _, state) do
-    program = Bytecode.parse(bytecode)
-    new_state = %{state | program: program}
+    new_state = %{state | memory: bytecode}
     {:reply, :ok, new_state}
   end
 
   def handle_call({:run}, _, state) do
-    new_state = Program.evaluate(state.program, state)
+    new_state = Program.evaluate(state.memory, state)
 
     {:reply, :ok, new_state}
   end

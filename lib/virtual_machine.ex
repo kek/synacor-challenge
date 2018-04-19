@@ -26,6 +26,8 @@ defmodule VirtualMachine do
 
   def run, do: GenServer.call(__MODULE__, {:run})
 
+  def reset, do: GenServer.call(__MODULE__, {:reset})
+
   def challenge do
     set_output(Terminal)
 
@@ -61,5 +63,9 @@ defmodule VirtualMachine do
     new_state = Program.evaluate(state.program, state)
 
     {:reply, :ok, new_state}
+  end
+
+  def handle_call({:reset}, _, _) do
+    {:reply, :ok, %State{}}
   end
 end

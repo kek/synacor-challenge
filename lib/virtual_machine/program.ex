@@ -1,15 +1,21 @@
 defmodule VirtualMachine.Program do
   alias VirtualMachine.Instruction
 
-  def evaluate([], state), do: state
+  def evaluate(program, state) do
+    instruction = Enum.at(program, state.pc)
 
-  # halt: 0 - stop execution and terminate the program
-  def evaluate([{:halt} | _], state) do
-    state
-  end
+    case instruction do
+      nil ->
+        state
 
-  def evaluate([instruction | rest], state) do
-    new_state = Instruction.execute(instruction, state)
-    evaluate(rest, new_state)
+      # halt: 0 - stop execution and terminate the program
+      {:halt} ->
+        state
+
+      instruction ->
+        state = Instruction.execute(instruction, state)
+        state = %{state | pc: state.pc + 1}
+        evaluate(program, state)
+    end
   end
 end

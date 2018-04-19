@@ -4,6 +4,11 @@ defmodule VirtualMachineTest do
 
   import VirtualMachine
 
+  setup do
+    VirtualMachine.reset()
+    :ok
+  end
+
   test "running the example program outputs the character in register 0 incremented by 4" do
     program = [9, 32768, 32769, 4, 19, 32768]
     load_bytecode(program)
@@ -12,6 +17,16 @@ defmodule VirtualMachineTest do
     run()
 
     assert_receive ?E
+  end
+
+  test "resetting the machine clears the state" do
+    load_program([{:out, ?A}])
+    set_output(self())
+    run()
+    assert_receive ?A
+
+    run()
+    refute_receive ?A
   end
 
   test "loading bytecode" do

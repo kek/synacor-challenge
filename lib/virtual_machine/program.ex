@@ -1,5 +1,5 @@
 defmodule VirtualMachine.Program do
-  alias VirtualMachine.{Instruction, Bytecode}
+  alias VirtualMachine.{Instruction, Code}
 
   def evaluate(program, state) do
     code = Enum.drop(program, state.pc)
@@ -13,7 +13,7 @@ defmodule VirtualMachine.Program do
         state
 
       code ->
-        instruction = Bytecode.parse(code)
+        instruction = Code.parse(code)
         state = Instruction.execute(instruction, state)
         state = %{state | pc: state.pc + tuple_size(instruction)}
         evaluate(program, state)

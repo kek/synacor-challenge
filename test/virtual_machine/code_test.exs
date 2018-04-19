@@ -1,7 +1,7 @@
-defmodule VirtualMachine.BytecodeTest do
+defmodule VirtualMachine.CodeTest do
   use ExUnit.Case
 
-  import VirtualMachine.Bytecode
+  import VirtualMachine.Code
 
   describe "parse" do
     test "transforms bytecode into instructions and data" do

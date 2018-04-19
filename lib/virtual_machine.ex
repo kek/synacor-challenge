@@ -4,7 +4,7 @@ defmodule VirtualMachine do
   """
 
   use GenServer
-  alias VirtualMachine.{Bytecode, Program, State, Terminal}
+  alias VirtualMachine.{Code, Program, State, Terminal}
 
   @register_offset 32768
 
@@ -30,7 +30,7 @@ defmodule VirtualMachine do
     set_output(Terminal)
 
     "priv/challenge.bin"
-    |> Bytecode.read()
+    |> Code.read()
     |> load_program()
 
     run()

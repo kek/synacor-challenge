@@ -1,4 +1,4 @@
-defmodule VirtualMachine.Bytecode do
+defmodule VirtualMachine.Code do
   def read(file) do
     file
     |> File.read!()

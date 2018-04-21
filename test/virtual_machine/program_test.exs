@@ -4,6 +4,7 @@ defmodule VirtualMachine.ProgramTest do
   test "Jumping in a program" do
     program = [6, 4, 19, ?A, 19, ?B]
 
+    VirtualMachine.reset()
     VirtualMachine.load_program(program)
     VirtualMachine.set_output(self())
     VirtualMachine.run()

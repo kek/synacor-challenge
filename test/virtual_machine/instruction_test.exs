@@ -144,11 +144,25 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:mult, a, b, c}" do
     test "store into <a> the product of <b> and <c> (modulo 32768)" do
+      initial_state = %State{registers: %{(@offset + 1) => 1000, (@offset + 2) => 100}}
+
+      expected_state = %State{
+        registers: %{@offset => 1696, (@offset + 1) => 1000, (@offset + 2) => 100}
+      }
+
+      assert execute({:mult, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
     end
   end
 
   describe "{:mod, a, b, c}" do
     test "store into <a> the remainder of <b> divided by <c>" do
+      initial_state = %State{registers: %{(@offset + 1) => 1000, (@offset + 2) => 100}}
+
+      expected_state = %State{
+        registers: %{@offset => 0, (@offset + 1) => 1000, (@offset + 2) => 100}
+      }
+
+      assert execute({:mod, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
     end
   end
 
@@ -190,16 +204,26 @@ defmodule VirtualMachine.InstructionTest do
 
   describe "{:rmem, a, b}" do
     test "read memory at address <b> and write it to <a>" do
+      initial_state = %State{registers: %{@offset => 0}, memory: [1]}
+      expected_state = %State{registers: %{@offset => 0, (@offset + 1) => 1}, memory: [1]}
+      assert execute({:rmem, @offset + 1, @offset}, initial_state) == expected_state
     end
   end
 
   describe "{:wmem, a, b}" do
     test "write the value from <b> into memory at address <a>" do
+      # do we have to allow b to be a register?
+      initial_state = %State{registers: %{@offset => 1}, memory: [0]}
+      expected_state = %State{registers: %{@offset => 1}, memory: [1]}
+      assert execute({:wmem, 0, @offset}, initial_state) == expected_state
     end
   end
 
   describe "{:call, a}" do
     test "write the address of the next instruction to the stack and jump to <a>" do
+      initial_state = %State{registers: %{@offset => 10}, pc: 0}
+      expected_state = %State{registers: %{@offset => 10}, pc: 8, stack: [2]}
+      assert execute({:call, @offset}, initial_state) == expected_state
     end
   end
 

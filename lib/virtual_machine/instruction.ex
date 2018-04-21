@@ -81,7 +81,24 @@ defmodule VirtualMachine.Instruction do
   end
 
   # mult: 10 a b c - store into <a> the product of <b> and <c> (modulo 32768)
+  def execute({:mult, a, b, c}, state) do
+    b = Value.dereference(b, state)
+    c = Value.dereference(c, state)
+    product = b * c
+    product = modulo32768(product)
+    %{state | registers: Map.put(state.registers, a, product)}
+  end
+
   # mod: 11 a b c - store into <a> the remainder of <b> divided by <c>
+  def execute({:mod, a, b, c}, state) do
+    b = Value.dereference(b, state)
+    c = Value.dereference(c, state)
+    remainder = rem(b, c)
+    # not tested:
+    remainder = modulo32768(remainder)
+    %{state | registers: Map.put(state.registers, a, remainder)}
+  end
+
   # and: 12 a b c - stores into <a> the bitwise and of <b> and <c>
   def execute({:and, a, b, c}, state) do
     b = Value.dereference(b, state)
@@ -106,8 +123,23 @@ defmodule VirtualMachine.Instruction do
   end
 
   # rmem: 15 a b - read memory at address <b> and write it to <a>
+  def execute({:rmem, a, b}, state) do
+    b = Value.dereference(b, state)
+    value = Enum.at(state.memory, b)
+    %{state | registers: Map.put(state.registers, a, value)}
+  end
+
   # wmem: 16 a b - write the value from <b> into memory at address <a>
+  def execute({:wmem, a, b}, state) do
+    b = Value.dereference(b, state)
+    %{state | memory: List.replace_at(state.memory, a, b)}
+  end
+
   # call: 17 a - write the address of the next instruction to the stack and jump to <a>
+  def execute({:call, a}, state) do
+    %{state | stack: [state.pc + 2], pc: Value.dereference(a, state) - 2}
+  end
+
   # ret: 18 - remove the top element from the stack and jump to it; empty stack = halt
   # out: 19 a - write the character represented by ascii code <a> to the terminal
   def execute({:out, value}, state) do

@@ -7,29 +7,29 @@ defmodule VirtualMachine.Instruction do
   @spec execute(instruction :: instruction(), state :: state()) :: state()
 
   # set: 1 a b - set register <a> to the value of <b>
-  def execute({:set, destination, source}, state) do
+  def execute(state, {:set, destination, source}) do
     new_registers = Map.put(state.registers, destination, Value.dereference(source, state))
     %{state | registers: new_registers}
   end
 
   # push: 2 a - push <a> onto the stack
-  def execute({:push, a}, state) do
+  def execute(state, {:push, a}) do
     %{state | stack: [Value.dereference(a, state) | state.stack]}
   end
 
   # pop: 3 a - remove the top element from the stack and write it into <a>
-  def execute({:pop, dest}, state = %{stack: [h | t]}) do
+  def execute(state = %{stack: [h | t]}, {:pop, dest}) do
     new_registers = Map.put(state.registers, dest, h)
     %{state | stack: t, registers: new_registers}
   end
 
   # empty stack = error
-  def execute({:pop, _}, %{stack: []}) do
+  def execute(%{stack: []}, {:pop, _}) do
     raise Exceptions.StackIsEmptyError, message: "Tried to pop empty stack"
   end
 
   # eq: 4 a b c - set <a> to 1 if <b> is equal to <c>; set it to 0 otherwise
-  def execute({:eq, dest, left, right}, state) do
+  def execute(state, {:eq, dest, left, right}) do
     values = {Value.dereference(left, state), Value.dereference(right, state)}
 
     result =
@@ -43,7 +43,7 @@ defmodule VirtualMachine.Instruction do
   end
 
   # gt: 5 a b c - set <a> to 1 if <b> is greater than <c>; set it to 0 otherwise
-  def execute({:gt, dest, left, right}, state) do
+  def execute(state, {:gt, dest, left, right}) do
     result = if Value.dereference(left, state) > Value.dereference(right, state), do: 1, else: 0
 
     new_registers = Map.put(state.registers, dest, result)
@@ -51,12 +51,12 @@ defmodule VirtualMachine.Instruction do
   end
 
   # jmp: 6 a - jump to <a>
-  def execute({:jmp, dest}, state) do
+  def execute(state, {:jmp, dest}) do
     %{state | pc: Value.dereference(dest, state) - 2}
   end
 
   # jt: 7 a b - if <a> is nonzero, jump to <b>
-  def execute({:jt, a, dest}, state) do
+  def execute(state, {:jt, a, dest}) do
     if(Value.dereference(a, state) != 0) do
       %{state | pc: Value.dereference(dest, state) - 3}
     else
@@ -65,7 +65,7 @@ defmodule VirtualMachine.Instruction do
   end
 
   # jf: 8 a b - if <a> is zero, jump to <b>
-  def execute({:jf, a, dest}, state) do
+  def execute(state, {:jf, a, dest}) do
     if(Value.dereference(a, state) == 0) do
       %{state | pc: Value.dereference(dest, state) - 3}
     else
@@ -74,14 +74,14 @@ defmodule VirtualMachine.Instruction do
   end
 
   # add: 9 a b c - assign into <a> the sum of <b> and <c> (modulo 32768)
-  def execute({:add, dest, left, right}, state) do
+  def execute(state, {:add, dest, left, right}) do
     sum = modulo32768(Value.dereference(left, state) + Value.dereference(right, state))
     # TODO: dereference dest?
     %{state | registers: Map.put(state.registers, dest, sum)}
   end
 
   # mult: 10 a b c - store into <a> the product of <b> and <c> (modulo 32768)
-  def execute({:mult, a, b, c}, state) do
+  def execute(state, {:mult, a, b, c}) do
     b = Value.dereference(b, state)
     c = Value.dereference(c, state)
     product = b * c
@@ -90,7 +90,7 @@ defmodule VirtualMachine.Instruction do
   end
 
   # mod: 11 a b c - store into <a> the remainder of <b> divided by <c>
-  def execute({:mod, a, b, c}, state) do
+  def execute(state, {:mod, a, b, c}) do
     b = Value.dereference(b, state)
     c = Value.dereference(c, state)
     remainder = rem(b, c)
@@ -100,7 +100,7 @@ defmodule VirtualMachine.Instruction do
   end
 
   # and: 12 a b c - stores into <a> the bitwise and of <b> and <c>
-  def execute({:and, a, b, c}, state) do
+  def execute(state, {:and, a, b, c}) do
     b = Value.dereference(b, state)
     c = Value.dereference(c, state)
 
@@ -108,7 +108,7 @@ defmodule VirtualMachine.Instruction do
   end
 
   # or: 13 a b c - stores into <a> the bitwise or of <b> and <c>
-  def execute({:or, a, b, c}, state) do
+  def execute(state, {:or, a, b, c}) do
     b = Value.dereference(b, state)
     c = Value.dereference(c, state)
 
@@ -116,33 +116,56 @@ defmodule VirtualMachine.Instruction do
   end
 
   # not: 14 a b - stores 15-bit bitwise inverse of <b> in <a>
-  def execute({:not, a, b}, state) do
+  def execute(state, {:not, a, b}) do
     b = Value.dereference(b, state)
 
     %{state | registers: Map.put(state.registers, a, modulo32768(Bitwise.bnot(b)))}
   end
 
   # rmem: 15 a b - read memory at address <b> and write it to <a>
-  def execute({:rmem, a, b}, state) do
-    b = Value.dereference(b, state)
-    value = Enum.at(state.memory, b)
-    %{state | registers: Map.put(state.registers, a, value)}
+  def execute(state, {:rmem, a, b}) do
+    b =
+      if b >= 32768 do
+        Value.dereference(b, state)
+      else
+        b
+      end
+
+    if a < 32768 do
+      value = Enum.at(state.memory, b)
+      %{state | memory: List.replace_at(state.memory, a, value)}
+    else
+      value = Enum.at(state.memory, b)
+      %{state | registers: Map.put(state.registers, a, value)}
+    end
   end
 
   # wmem: 16 a b - write the value from <b> into memory at address <a>
-  def execute({:wmem, a, b}, state) do
-    b = Value.dereference(b, state)
-    %{state | memory: List.replace_at(state.memory, a, b)}
+  def execute(state, {:wmem, a, b}) do
+    if a < 32768 do
+      b = Value.dereference(b, state)
+
+      %{state | memory: List.replace_at(state.memory, a, b)}
+    else
+      b =
+        if b >= 32768 do
+          Value.dereference(b, state)
+        else
+          b
+        end
+
+      %{state | registers: Map.put(state.registers, a, b)}
+    end
   end
 
   # call: 17 a - write the address of the next instruction to the stack and jump to <a>
-  def execute({:call, a}, state) do
+  def execute(state, {:call, a}) do
     %{state | stack: [state.pc + 2], pc: Value.dereference(a, state) - 2}
   end
 
   # ret: 18 - remove the top element from the stack and jump to it; empty stack = halt
   # out: 19 a - write the character represented by ascii code <a> to the terminal
-  def execute({:out, value}, state) do
+  def execute(state, {:out, value}) do
     send(state.output, Value.dereference(value, state))
     state
   end
@@ -152,7 +175,7 @@ defmodule VirtualMachine.Instruction do
   #     encountered; this means that you can safely read whole lines from the keyboard
   #     and trust that they will be fully read
   # noop: 21 - no operation
-  def execute({:noop}, state), do: state
+  def execute(state, {:noop}), do: state
 
   defp modulo32768(number) when number < 0, do: number + 32768
   defp modulo32768(number) when number < 32768, do: number

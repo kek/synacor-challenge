@@ -5,6 +5,7 @@ defmodule VirtualMachine.InstructionTest do
   alias VirtualMachine.State
 
   @offset 32768
+  @memory_size 10
 
   describe "{:set, a, b}" do
     test "set register <a> to the value of <b>" do
@@ -14,7 +15,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 1, (@offset + 1) => 1}
       }
 
-      assert execute({:set, @offset + 1, @offset}, initial_state) == expected_state
+      assert execute(initial_state, {:set, @offset + 1, @offset}) == expected_state
     end
   end
 
@@ -23,7 +24,7 @@ defmodule VirtualMachine.InstructionTest do
       initial_state = %State{registers: %{@offset => 2}, stack: [1]}
       expected_state = %State{registers: %{@offset => 2}, stack: [2, 1]}
 
-      assert execute({:push, @offset}, initial_state) == expected_state
+      assert execute(initial_state, {:push, @offset}) == expected_state
     end
   end
 
@@ -32,14 +33,14 @@ defmodule VirtualMachine.InstructionTest do
       initial_state = %State{registers: %{@offset => 1}, stack: [2, 1]}
       expected_state = %State{registers: %{@offset => 2}, stack: [1]}
 
-      assert execute({:pop, @offset}, initial_state) == expected_state
+      assert execute(initial_state, {:pop, @offset}) == expected_state
     end
 
     test "empty stack = error" do
       initial_state = %State{stack: []}
 
       assert_raise(VirtualMachine.Exceptions.StackIsEmptyError, fn ->
-        execute({:pop, @offset}, initial_state)
+        execute(initial_state, {:pop, @offset})
       end)
     end
   end
@@ -52,7 +53,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 1, (@offset + 1) => ?A, (@offset + 2) => ?A}
       }
 
-      assert execute({:eq, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:eq, @offset, @offset + 1, @offset + 2}) == expected_state
     end
 
     test "set it to 0 otherwise" do
@@ -62,7 +63,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 0, (@offset + 1) => ?A, (@offset + 2) => ?B}
       }
 
-      assert execute({:eq, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:eq, @offset, @offset + 1, @offset + 2}) == expected_state
     end
   end
 
@@ -74,7 +75,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 1, (@offset + 1) => ?B, (@offset + 2) => ?A}
       }
 
-      assert execute({:gt, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:gt, @offset, @offset + 1, @offset + 2}) == expected_state
     end
 
     test "set it to 0 otherwise" do
@@ -84,7 +85,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 0, (@offset + 1) => ?A, (@offset + 2) => ?A}
       }
 
-      assert execute({:gt, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:gt, @offset, @offset + 1, @offset + 2}) == expected_state
     end
   end
 
@@ -93,7 +94,7 @@ defmodule VirtualMachine.InstructionTest do
       initial_state = %State{registers: %{@offset => 10}, pc: 0}
       expected_state = %State{registers: %{@offset => 10}, pc: 8}
 
-      assert execute({:jmp, @offset}, initial_state) == expected_state
+      assert execute(initial_state, {:jmp, @offset}) == expected_state
     end
   end
 
@@ -102,14 +103,14 @@ defmodule VirtualMachine.InstructionTest do
       initial_state = %State{registers: %{@offset => 1}, pc: 0}
       expected_state = %State{registers: %{@offset => 1}, pc: 7}
 
-      assert execute({:jt, @offset, 10}, initial_state) == expected_state
+      assert execute(initial_state, {:jt, @offset, 10}) == expected_state
     end
 
     test "otherwise noop" do
       initial_state = %State{registers: %{@offset => 0}, pc: 0}
       expected_state = %State{registers: %{@offset => 0}, pc: 0}
 
-      assert execute({:jt, @offset, 10}, initial_state) == expected_state
+      assert execute(initial_state, {:jt, @offset, 10}) == expected_state
     end
   end
 
@@ -118,14 +119,14 @@ defmodule VirtualMachine.InstructionTest do
       initial_state = %State{registers: %{@offset => 0}, pc: 0}
       expected_state = %State{registers: %{@offset => 0}, pc: 7}
 
-      assert execute({:jf, @offset, 10}, initial_state) == expected_state
+      assert execute(initial_state, {:jf, @offset, 10}) == expected_state
     end
 
     test "otherwise noop" do
       initial_state = %State{registers: %{@offset => 1}, pc: 0}
       expected_state = %State{registers: %{@offset => 1}, pc: 0}
 
-      assert execute({:jf, @offset, 10}, initial_state) == expected_state
+      assert execute(initial_state, {:jf, @offset, 10}) == expected_state
     end
   end
 
@@ -138,7 +139,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 5, (@offset + 1) => 32758, (@offset + 2) => 15}
       }
 
-      assert execute({:add, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:add, @offset, @offset + 1, @offset + 2}) == expected_state
     end
   end
 
@@ -150,7 +151,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 1696, (@offset + 1) => 1000, (@offset + 2) => 100}
       }
 
-      assert execute({:mult, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:mult, @offset, @offset + 1, @offset + 2}) == expected_state
     end
   end
 
@@ -162,7 +163,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 0, (@offset + 1) => 1000, (@offset + 2) => 100}
       }
 
-      assert execute({:mod, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:mod, @offset, @offset + 1, @offset + 2}) == expected_state
     end
   end
 
@@ -174,7 +175,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 1, (@offset + 1) => 1, (@offset + 2) => 1}
       }
 
-      assert execute({:and, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:and, @offset, @offset + 1, @offset + 2}) == expected_state
     end
   end
 
@@ -186,7 +187,7 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 1, (@offset + 1) => 1, (@offset + 2) => 1}
       }
 
-      assert execute({:and, @offset, @offset + 1, @offset + 2}, initial_state) == expected_state
+      assert execute(initial_state, {:and, @offset, @offset + 1, @offset + 2}) == expected_state
     end
   end
 
@@ -198,32 +199,96 @@ defmodule VirtualMachine.InstructionTest do
         registers: %{@offset => 32767, (@offset + 1) => 0}
       }
 
-      assert execute({:not, @offset, @offset + 1}, initial_state) == expected_state
+      assert execute(initial_state, {:not, @offset, @offset + 1}) == expected_state
     end
   end
 
   describe "{:rmem, a, b}" do
-    test "read memory at address <b> and write it to <a>" do
-      initial_state = %State{registers: %{@offset => 0}, memory: [1]}
-      expected_state = %State{registers: %{@offset => 0, (@offset + 1) => 1}, memory: [1]}
-      assert execute({:rmem, @offset + 1, @offset}, initial_state) == expected_state
+    test "read memory at address <b> and write it to <a> when <a> references a register" do
+      x = @offset
+      y = @offset + 1
+
+      initial_state = %State{registers: %{x => 0}, memory: memory([?A])}
+
+      expected_state = %State{
+        registers: %{x => 0, y => ?A},
+        memory: memory([?A])
+      }
+
+      assert execute(initial_state, {:rmem, y, x}) == expected_state
+    end
+
+    test "read memory at address <b> and write it to <a> when <a> references memory" do
+      initial_state = %State{memory: memory([?A, ?B])}
+
+      expected_state = %State{
+        memory: memory([?B, ?B])
+      }
+
+      assert execute(initial_state, {:rmem, 0, 1}) == expected_state
     end
   end
 
   describe "{:wmem, a, b}" do
     test "write the value from <b> into memory at address <a>" do
       # do we have to allow b to be a register?
-      initial_state = %State{registers: %{@offset => 1}, memory: [0]}
-      expected_state = %State{registers: %{@offset => 1}, memory: [1]}
-      assert execute({:wmem, 0, @offset}, initial_state) == expected_state
+      x = @offset
+
+      initial_state = %State{registers: %{x => ?B}, memory: memory([?A])}
+      expected_state = %State{registers: %{x => ?B}, memory: memory([?B])}
+      assert execute(initial_state, {:wmem, 0, x}) == expected_state
     end
+
+    test "write a value into a register" do
+      initial_state = %State{registers: %{}, memory: memory()}
+      expected_state = %State{registers: %{@offset => ?B}, memory: memory()}
+      assert execute(initial_state, {:wmem, @offset, ?B}) == expected_state
+    end
+
+    test "copy a register value to another register" do
+      x = @offset
+      y = @offset + 1
+      initial_state = %State{registers: %{x => ?A, y => ?B}}
+      expected_state = %State{registers: %{x => ?B, y => ?B}}
+      assert execute(initial_state, {:wmem, x, y}) == expected_state
+    end
+
+    test "write a value into memory" do
+      initial_state = %State{registers: %{}, memory: memory([?A, ?B])}
+      expected_state = %State{registers: %{}, memory: memory([?B, ?B])}
+      assert execute(initial_state, {:wmem, 0, ?B}) == expected_state
+    end
+  end
+
+  test "wmem, then rmem" do
+    x = @offset
+    z = @offset + 2
+
+    initial_state = %State{
+      registers: %{x => 0},
+      memory: memory()
+    }
+
+    expected_state = %State{
+      registers: %{x => 0, z => ?B},
+      memory: memory([?B])
+    }
+
+    actual_state =
+      initial_state
+      # Write ?B to address 0
+      |> execute({:wmem, 0, ?B})
+      # Read from address 0 into z
+      |> execute({:rmem, z, x})
+
+    assert actual_state == expected_state
   end
 
   describe "{:call, a}" do
     test "write the address of the next instruction to the stack and jump to <a>" do
       initial_state = %State{registers: %{@offset => 10}, pc: 0}
       expected_state = %State{registers: %{@offset => 10}, pc: 8, stack: [2]}
-      assert execute({:call, @offset}, initial_state) == expected_state
+      assert execute(initial_state, {:call, @offset}) == expected_state
     end
   end
 
@@ -248,7 +313,15 @@ defmodule VirtualMachine.InstructionTest do
   describe "{:noop}" do
     test "no operation" do
       state = %State{}
-      assert execute({:noop}, state) == state
+      assert execute(state, {:noop}) == state
     end
+  end
+
+  defp memory(start \\ []) do
+    rest =
+      Stream.cycle([0])
+      |> Enum.take(@memory_size - length(start))
+
+    start ++ rest
   end
 end

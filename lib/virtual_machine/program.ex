@@ -14,7 +14,7 @@ defmodule VirtualMachine.Program do
 
       code ->
         instruction = Code.parse(code)
-        state = Instruction.execute(instruction, state)
+        state = Instruction.execute(state, instruction)
         state = %{state | pc: state.pc + tuple_size(instruction)}
         evaluate(program, state)
     end

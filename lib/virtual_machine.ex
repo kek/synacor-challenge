@@ -10,7 +10,7 @@ defmodule VirtualMachine do
 
   def start_link(_), do: GenServer.start_link(__MODULE__, [], name: __MODULE__)
 
-  def init([]), do: {:ok, %State{}}
+  def init([]), do: {:ok, %State{memory: Enum.map(0..32767, fn _ -> 0 end)}}
 
   def set_register(register, value),
     do: GenServer.call(__MODULE__, {:set_register, @register_offset + register, value})
@@ -63,6 +63,6 @@ defmodule VirtualMachine do
   end
 
   def handle_call({:reset}, _, _) do
-    {:reply, :ok, %State{}}
+    {:reply, :ok, %State{memory: Enum.map(0..32767, fn _ -> 0 end)}}
   end
 end

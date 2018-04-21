@@ -1,5 +1,4 @@
 defmodule VirtualMachine.State do
-  @emptymemory Enum.map(0..32767, fn _ -> 0 end)
   defstruct registers: %{
               32768 => 0,
               32769 => 0,

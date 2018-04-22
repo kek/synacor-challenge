@@ -55,9 +55,11 @@ defmodule VirtualMachineTest do
     load_program([19, ?A, 19, ?B])
     set_output(self())
     step()
+    assert_receive({:state, %{pc: 2}})
     assert_receive ?A
     refute_receive ?B
     step()
+    assert_receive({:state, %{pc: 4}})
     assert_receive ?B
   end
 

@@ -291,7 +291,18 @@ defmodule VirtualMachine.InstructionTest do
   end
 
   describe "{:ret}" do
-    test "remove the top element from the stack and jump to it; empty stack = halt" do
+    test "remove the top element from the stack and jump to it" do
+      initial_state = %State{pc: 0, stack: [10]}
+      expected_state = %State{pc: 9, stack: []}
+      assert execute(initial_state, {:ret}) == expected_state
+    end
+
+    test "empty stack = halt" do
+      initial_state = %State{pc: 0, stack: []}
+
+      assert_raise VirtualMachine.Exceptions.StackIsEmptyError, fn ->
+        execute(initial_state, {:ret})
+      end
     end
   end
 

@@ -150,6 +150,14 @@ defmodule VirtualMachine.Instruction do
   end
 
   # ret: 18 - remove the top element from the stack and jump to it; empty stack = halt
+  def execute(%{stack: []}, {:ret}) do
+    raise Exceptions.StackIsEmptyError, message: "Tried to return without return address"
+  end
+
+  def execute(state = %{stack: [address | rest]}, {:ret}) do
+    %{state | stack: rest, pc: address - 1}
+  end
+
   # out: 19 a - write the character represented by ascii code <a> to the terminal
   def execute(state, {:out, value}) do
     send(state.output, Value.dereference(value, state))

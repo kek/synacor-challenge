@@ -51,6 +51,16 @@ defmodule VirtualMachineTest do
     assert_receive ?A
   end
 
+  test "stepping one instruction" do
+    load_program([19, ?A, 19, ?B])
+    set_output(self())
+    step()
+    assert_receive ?A
+    refute_receive ?B
+    step()
+    assert_receive ?B
+  end
+
   test "getting and setting registers" do
     Enum.each(0..7, &set_register(&1, 1))
     Enum.each(0..7, &assert(get_register(&1) == 1))

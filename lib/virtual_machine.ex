@@ -4,7 +4,7 @@ defmodule VirtualMachine do
   """
 
   use GenServer
-  alias VirtualMachine.{Code, Program, State, Terminal}
+  alias VirtualMachine.{Code, Program, State, Terminal, Instruction}
 
   @register_offset 32768
 
@@ -23,6 +23,8 @@ defmodule VirtualMachine do
   def load_program(program), do: GenServer.call(__MODULE__, {:load_program, program})
 
   def run, do: GenServer.call(__MODULE__, {:run})
+
+  def step, do: GenServer.call(__MODULE__, {:step})
 
   def reset, do: GenServer.call(__MODULE__, {:reset})
 
@@ -53,6 +55,8 @@ defmodule VirtualMachine do
 
   def handle_call({:load_program, bytecode}, _, state) do
     new_state = %{state | memory: bytecode}
+    send(state.output, {:state, new_state})
+
     {:reply, :ok, new_state}
   end
 
@@ -62,7 +66,20 @@ defmodule VirtualMachine do
     {:reply, :ok, new_state}
   end
 
+  def handle_call({:step}, _, state) do
+    {:reply, :ok, step(state)}
+  end
+
   def handle_call({:reset}, _, _) do
     {:reply, :ok, %State{memory: Enum.map(0..32767, fn _ -> 0 end)}}
+  end
+
+  defp step(state = %{pc: pc, memory: memory}) do
+    code = Enum.drop(memory, pc)
+    instruction = Code.parse(code)
+    state = Instruction.execute(state, instruction)
+    new_state = %{state | pc: state.pc + tuple_size(instruction)}
+    send(state.output, {:state, new_state})
+    new_state
   end
 end

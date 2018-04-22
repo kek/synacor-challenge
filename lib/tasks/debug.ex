@@ -13,8 +13,6 @@ defmodule Mix.Tasks.Debug do
     |> VirtualMachine.Code.read()
     |> VirtualMachine.load_program()
 
-    VirtualMachine.run()
-
     Process.monitor(pid)
 
     receive do

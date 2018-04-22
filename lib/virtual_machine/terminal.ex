@@ -15,6 +15,10 @@ defmodule VirtualMachine.Terminal do
     {:reply, buffer, buffer}
   end
 
+  def handle_info({:state, _}, buffer) do
+    {:noreply, buffer}
+  end
+
   def handle_info(10, buffer) do
     IO.puts(buffer)
     {:noreply, ""}

@@ -1,4 +1,5 @@
 defmodule VirtualMachine.UI do
+  alias VirtualMachine.{Code, Instruction}
   use GenServer
 
   def start_link do
@@ -10,7 +11,7 @@ defmodule VirtualMachine.UI do
             memory: nil,
             registers: nil,
             stack: nil,
-            foo: nil,
+            instruction: nil,
             buffer: ""
 
   def init([]) do
@@ -19,7 +20,7 @@ defmodule VirtualMachine.UI do
     ExNcurses.refresh()
 
     ui = %__MODULE__{
-      foo: new_window("foo", 10, 40, 0, 0),
+      instruction: new_window("foo", 10, 40, 0, 0),
       help: new_window("help", 4, 80, 20, 0),
       output: new_window("output", 10, 40, 10, 0),
       memory: new_window("memory", 20, 18, 0, 41),
@@ -36,15 +37,36 @@ defmodule VirtualMachine.UI do
     {:ok, ui}
   end
 
-  def print(window, text) do
-    GenServer.call(__MODULE__, {:print, window, text})
+  def display(window, map) when is_map(map) do
+    ExNcurses.wclear(window)
+    ExNcurses.wmove(window, 1, 0)
+
+    Enum.each(map, fn {key, value} ->
+      ExNcurses.waddstr(window, "#{key} => #{value}\n")
+    end)
+
+    ExNcurses.wrefresh(window)
+    ExNcurses.refresh()
   end
 
-  def handle_call({:print, window_name, text}, _, ui) do
-    window = Map.get(ui, window_name)
-    ExNcurses.waddstr(window, text)
+  def display(window, tuple) when is_tuple(tuple) do
+    ExNcurses.wclear(window)
+    ExNcurses.waddstr(window, inspect(tuple))
     ExNcurses.wrefresh(window)
-    {:reply, :ok, ui}
+    ExNcurses.refresh()
+  end
+
+  def display(window, list, offset \\ 0) when is_list(list) do
+    ExNcurses.wclear(window)
+
+    list
+    |> Enum.zip(0..length(list))
+    |> Enum.each(fn {element, index} ->
+      ExNcurses.waddstr(window, "#{offset + index}: #{element}\n")
+    end)
+
+    ExNcurses.wrefresh(window)
+    ExNcurses.refresh()
   end
 
   def handle_call({:buffer}, _, ui) do
@@ -61,10 +83,32 @@ defmodule VirtualMachine.UI do
     {:stop, :STOP, ui}
   end
 
+  def handle_info({:ex_ncurses, :key, ?s}, ui) do
+    VirtualMachine.step()
+    {:noreply, ui}
+  end
+
   def handle_info({:ex_ncurses, :key, key}, ui) do
     string = "#{key} "
     ExNcurses.waddstr(ui.output, string)
     ExNcurses.wrefresh(ui.output)
+    {:noreply, ui}
+  end
+
+  def handle_info({:state, state}, ui) do
+    display(ui.registers, state.registers)
+    display(ui.stack, state.stack)
+
+    displayed_memory =
+      state.memory
+      |> Enum.drop(state.pc)
+      |> Enum.take(10)
+
+    display(ui.memory, displayed_memory, state.pc)
+
+    code = Enum.drop(state.memory, state.pc)
+    instruction = Code.parse(code)
+    display(ui.instruction, instruction)
     {:noreply, ui}
   end
 
@@ -81,7 +125,7 @@ defmodule VirtualMachine.UI do
 
   defp new_window(title, height, width, y, x) do
     window = ExNcurses.newwin(height, width, y, x)
-    ExNcurses.wborder(window)
+    # ExNcurses.wborder(window)
     ExNcurses.wmove(window, 0, 2)
     ExNcurses.waddstr(window, title)
     ExNcurses.wmove(window, 1, 2)

@@ -230,19 +230,13 @@ defmodule VirtualMachine.InstructionTest do
   end
 
   describe "{:wmem, a, b}" do
-    test "write the value from <b> into memory at address <a>" do
+    test "write the value from <b> (reg) into memory at address <a> (mem)" do
       # do we have to allow b to be a register?
       x = @offset
 
       initial_state = %State{registers: %{x => ?B}, memory: memory([?A])}
       expected_state = %State{registers: %{x => ?B}, memory: memory([?B])}
       assert execute(initial_state, {:wmem, 0, x}) == expected_state
-    end
-
-    test "write a value into a register" do
-      initial_state = %State{registers: %{}, memory: memory()}
-      expected_state = %State{registers: %{@offset => ?B}, memory: memory()}
-      assert execute(initial_state, {:wmem, @offset, ?B}) == expected_state
     end
 
     test "copy a register value to another register" do
@@ -253,10 +247,16 @@ defmodule VirtualMachine.InstructionTest do
       assert execute(initial_state, {:wmem, x, y}) == expected_state
     end
 
-    test "write a value into memory" do
+    test "write a literal value <b> into memory" do
       initial_state = %State{registers: %{}, memory: memory([?A, ?B])}
       expected_state = %State{registers: %{}, memory: memory([?B, ?B])}
       assert execute(initial_state, {:wmem, 0, ?B}) == expected_state
+    end
+
+    test "write a literal value <b> into the memory address referenced by register <a>" do
+      initial_state = %State{registers: %{@offset => 0}, memory: memory([?A])}
+      expected_state = %State{registers: %{@offset => 0}, memory: memory([?B])}
+      assert execute(initial_state, {:wmem, @offset, ?B}) == expected_state
     end
   end
 
@@ -276,9 +276,7 @@ defmodule VirtualMachine.InstructionTest do
 
     actual_state =
       initial_state
-      # Write ?B to address 0
       |> execute({:wmem, 0, ?B})
-      # Read from address 0 into z
       |> execute({:rmem, z, x})
 
     assert actual_state == expected_state

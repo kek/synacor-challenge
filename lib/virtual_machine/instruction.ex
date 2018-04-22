@@ -124,38 +124,24 @@ defmodule VirtualMachine.Instruction do
 
   # rmem: 15 a b - read memory at address <b> and write it to <a>
   def execute(state, {:rmem, a, b}) do
-    b =
-      if b >= 32768 do
-        Value.dereference(b, state)
-      else
-        b
-      end
+    b = Value.dereference(b, state)
+    value = Enum.at(state.memory, b)
 
-    if a < 32768 do
-      value = Enum.at(state.memory, b)
-      %{state | memory: List.replace_at(state.memory, a, value)}
-    else
-      value = Enum.at(state.memory, b)
-      %{state | registers: Map.put(state.registers, a, value)}
-    end
+    update(state, a, value)
   end
 
   # wmem: 16 a b - write the value from <b> into memory at address <a>
+  def execute(state, {:wmem, a, b}) when b < 32768 do
+    a = Value.dereference(a, state)
+    b = Value.dereference(b, state)
+
+    update(state, a, b)
+  end
+
   def execute(state, {:wmem, a, b}) do
-    if a < 32768 do
-      b = Value.dereference(b, state)
+    b = Value.dereference(b, state)
 
-      %{state | memory: List.replace_at(state.memory, a, b)}
-    else
-      b =
-        if b >= 32768 do
-          Value.dereference(b, state)
-        else
-          b
-        end
-
-      %{state | registers: Map.put(state.registers, a, b)}
-    end
+    update(state, a, b)
   end
 
   # call: 17 a - write the address of the next instruction to the stack and jump to <a>
@@ -180,4 +166,12 @@ defmodule VirtualMachine.Instruction do
   defp modulo32768(number) when number < 0, do: number + 32768
   defp modulo32768(number) when number < 32768, do: number
   defp modulo32768(number), do: modulo32768(number - 32768)
+
+  defp update(state, address, value) when address < 32768 do
+    %{state | memory: List.replace_at(state.memory, address, value)}
+  end
+
+  defp update(state, address, value) do
+    %{state | registers: Map.put(state.registers, address, value)}
+  end
 end

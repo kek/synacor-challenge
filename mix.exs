@@ -20,7 +20,8 @@ defmodule VirtualMachine.MixProject do
 
   defp deps do
     [
-      {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false}
+      {:mix_test_watch, "~> 0.6.0", only: :dev, runtime: false},
+      {:ex_ncurses, "~> 0.3"}
     ]
   end
 end

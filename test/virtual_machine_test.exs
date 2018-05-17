@@ -55,11 +55,12 @@ defmodule VirtualMachineTest do
     load_program([19, ?A, 19, ?B])
     set_output(self())
     step()
-    assert_receive({:state, %{pc: 2}})
+    assert_receive({:state, %{pc: 2, running: {true, nil}}})
     assert_receive ?A
     refute_receive ?B
     step()
-    assert_receive({:state, %{pc: 4}})
+    step()
+    assert_receive({:state, %{pc: 4, running: {false, "no more program"}}})
     assert_receive ?B
   end
 
@@ -72,8 +73,12 @@ defmodule VirtualMachineTest do
     test "stop execution and terminate the program" do
       load_program([0, 19, ?A])
       set_output(self())
-      run()
+      step()
       refute_receive ?A
+      assert_receive({:state, %{running: {false, "halt"}}})
+      step()
+      refute_receive ?A
+      assert_receive({:state, %{running: {false, "halt"}}})
     end
   end
 end

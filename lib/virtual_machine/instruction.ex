@@ -6,6 +6,20 @@ defmodule VirtualMachine.Instruction do
   @type state :: VirtualMachine.State.t()
   @spec execute(instruction :: instruction(), state :: state()) :: state()
 
+  # TODO unit test
+  def execute(state = %{running: false}, _) do
+    state
+  end
+
+  # TODO unit test
+  def execute(state, {:halt}) do
+    %{state | running: {false, "halt"}}
+  end
+
+  def execute(state, {}) do
+    %{state | running: {false, "halt"}}
+  end
+
   # set: 1 a b - set register <a> to the value of <b>
   def execute(state, {:set, destination, source}) do
     new_registers = Map.put(state.registers, destination, Value.dereference(source, state))
@@ -24,8 +38,9 @@ defmodule VirtualMachine.Instruction do
   end
 
   # empty stack = error
-  def execute(%{stack: []}, {:pop, _}) do
-    raise Exceptions.StackIsEmptyError, message: "Tried to pop empty stack"
+  def execute(state = %{stack: []}, {:pop, _}) do
+    # raise Exceptions.StackIsEmptyError, message: "Tried to pop empty stack"
+    %{state | running: {false, "pop empty stack"}}
   end
 
   # eq: 4 a b c - set <a> to 1 if <b> is equal to <c>; set it to 0 otherwise
@@ -150,8 +165,9 @@ defmodule VirtualMachine.Instruction do
   end
 
   # ret: 18 - remove the top element from the stack and jump to it; empty stack = halt
-  def execute(%{stack: []}, {:ret}) do
-    raise Exceptions.StackIsEmptyError, message: "Tried to return without return address"
+  def execute(state = %{stack: []}, {:ret}) do
+    # raise Exceptions.StackIsEmptyError, message: "Tried to return without return address"
+    %{state | running: {false, "return from nowhere"}}
   end
 
   def execute(state = %{stack: [address | rest]}, {:ret}) do

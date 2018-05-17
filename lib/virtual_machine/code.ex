@@ -14,6 +14,7 @@ defmodule VirtualMachine.Code do
     []
   end
 
+  def parse([]), do: {}
   # halt: 0 - stop execution and terminate the program
   def parse([0 | _]), do: {:halt}
   # set: 1 a b - set register <a> to the value of <b>

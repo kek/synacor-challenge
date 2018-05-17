@@ -5,6 +5,7 @@ defmodule VirtualMachine.CodeTest do
 
   describe "parse" do
     test "transforms bytecode into instructions and data" do
+      assert parse([]) == {}
       assert parse([19, ?A, 19, ?A]) == {:out, ?A}
       assert parse([0]) == {:halt}
       assert parse([1, ?A, ?B]) == {:set, ?A, ?B}

@@ -12,5 +12,6 @@ defmodule VirtualMachine.State do
             memory: [],
             output: VirtualMachine.Terminal,
             stack: [],
-            pc: 0
+            pc: 0,
+            running: {true, nil}
 end

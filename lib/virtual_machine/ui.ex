@@ -24,7 +24,7 @@ defmodule VirtualMachine.UI do
       help: new_window("help", 4, 80, 20, 0),
       output: new_window("output", 10, 40, 10, 0),
       memory: new_window("memory", 20, 18, 0, 41),
-      registers: new_window("registers", 10, 20, 0, 60),
+      registers: new_window("registers", 10, 40, 0, 60),
       stack: new_window("stack", 10, 20, 10, 60)
     }
 
@@ -96,7 +96,7 @@ defmodule VirtualMachine.UI do
   end
 
   def handle_info({:state, state}, ui) do
-    display(ui.registers, state.registers)
+    display(ui.registers, Map.put(state.registers, :running, inspect(state.running)))
     display(ui.stack, state.stack)
 
     displayed_memory =

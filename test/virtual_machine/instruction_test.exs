@@ -38,10 +38,11 @@ defmodule VirtualMachine.InstructionTest do
 
     test "empty stack = error" do
       initial_state = %State{stack: []}
+      expected_state = %State{stack: [], running: {false, "pop empty stack"}}
 
-      assert_raise(VirtualMachine.Exceptions.StackIsEmptyError, fn ->
-        execute(initial_state, {:pop, @offset})
-      end)
+      # assert_raise(VirtualMachine.Exceptions.StackIsEmptyError, fn ->
+      assert execute(initial_state, {:pop, @offset}) == expected_state
+      # end)
     end
   end
 
@@ -299,10 +300,11 @@ defmodule VirtualMachine.InstructionTest do
 
     test "empty stack = halt" do
       initial_state = %State{pc: 0, stack: []}
+      expected_state = %State{pc: 0, stack: [], running: {false, "return from nowhere"}}
 
-      assert_raise VirtualMachine.Exceptions.StackIsEmptyError, fn ->
-        execute(initial_state, {:ret})
-      end
+      # assert_raise VirtualMachine.Exceptions.StackIsEmptyError, fn ->
+      assert execute(initial_state, {:ret}) == expected_state
+      # end
     end
   end
 

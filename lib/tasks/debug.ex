@@ -1,7 +1,7 @@
 defmodule Mix.Tasks.Debug do
   use Mix.Task
 
-  @moduledoc "Debug the VM"
+  @shortdoc "Debug the VM"
 
   def run(_) do
     Application.ensure_all_started(:virtual_machine)

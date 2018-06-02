@@ -88,6 +88,17 @@ defmodule VirtualMachine.UI do
     {:noreply, ui}
   end
 
+  def handle_info({:ex_ncurses, :key, ?c}, ui) do
+    VirtualMachine.run()
+    ExNcurses.wrefresh(ui.registers)
+    ExNcurses.wrefresh(ui.stack)
+    ExNcurses.wrefresh(ui.memory)
+    ExNcurses.wrefresh(ui.instruction)
+    ExNcurses.wrefresh(ui.output)
+    ExNcurses.refresh()
+    {:noreply, ui}
+  end
+
   def handle_info({:ex_ncurses, :key, key}, ui) do
     string = "#{key} "
     ExNcurses.waddstr(ui.output, string)
